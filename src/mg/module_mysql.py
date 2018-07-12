@@ -40,7 +40,7 @@ class MysqlClient(object):
 
     def __init__(self):
         try:
-            self.db = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE,
+            self.db = pymysql.connect(host=HOST, user='lizhidan', password=PASSWORD, database=DATABASE,
                                       charset='utf8', port=3306)
         except:
             self.db = pymysql.connect(host=HOST, user=USER, password=PASSWORD_LOCAL, database=DATABASE,
