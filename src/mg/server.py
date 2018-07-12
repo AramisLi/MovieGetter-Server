@@ -15,7 +15,7 @@ def client():
     return g.client
 
 
-@app.route('/', methods=['GET'])
+@app.route('/index', methods=['GET'])
 def test():
     return '我是大帅哥'
 
@@ -43,11 +43,11 @@ def create_user():
     return client().create_user(root_imei, imei, role, usable, name)
 
 
-@app.route('/get_role', methods=['GET'])
+@app.route('/get_role', methods=['POST'])
 def get_role():
-    print(type(request.args), request.args)
-    if 'imei' in request.args:
-        imei = request.args.get('imei')
+    # print(type(request.args), request.args)
+    if 'imei' in request.form:
+        imei = request.form.get('imei')
     else:
         return server_return.server_error(server_return.ERROR_PARAMS)
     return client().select_role(imei)
@@ -57,14 +57,15 @@ def get_role():
 def mark_in():
     local = None
     ip = None
+    print(request.form)
     if 'imei' in request.form:
         imei = request.form['imei']
     else:
-        return server_return.server_error(server_return.ERROR_PARAMS)
+        return server_return.server_error(server_return.ERROR_PARAMS, "imei")
     if 'login_time' in request.form:
         login_time = request.form['login_time']
     else:
-        return server_return.server_error(server_return.ERROR_PARAMS)
+        return server_return.server_error(server_return.ERROR_PARAMS, "login_time")
     if 'local' in request.form:
         local = request.form['local']
     if 'ip' in request.form:
@@ -85,6 +86,39 @@ def mark_out():
         return server_return.server_error(server_return.ERROR_PARAMS)
 
     return client().mark_out(mark_id, logout_time)
+
+
+@app.route('/mark_movie', methods=['POST'])
+def mark_movie():
+    if 'imei' in request.form:
+        imei = request.form['imei']
+    else:
+        return server_return.server_error(server_return.ERROR_PARAMS, 'imei')
+    if 'movieId' in request.form:
+        movie_id = request.form['movieId']
+    else:
+        return server_return.server_error(server_return.ERROR_PARAMS, 'movieId')
+    if 'movieName' in request.form:
+        movie_name = request.form['movieName']
+    else:
+        return server_return.server_error(server_return.ERROR_PARAMS, 'movieName')
+    if 'downloaded_time' in request.form:
+        downloaded_time = request.form['downloaded_time']
+    else:
+        return server_return.server_error(server_return.ERROR_PARAMS, 'downloaded_time')
+    if 'downloaded_timestamp' in request.form:
+        downloaded_timestamp = request.form['downloaded_timestamp']
+    else:
+        return server_return.server_error(server_return.ERROR_PARAMS, 'downloaded_timestamp')
+
+    return client().mark_movie(imei, movie_id, movie_name, downloaded_time, downloaded_timestamp)
+
+
+def get_post_params(param_name: str):
+    if 'logout_time' in request.form:
+        logout_time = request.form['logout_time']
+    else:
+        return server_return.server_error(server_return.ERROR_PARAMS)
 
 
 if __name__ == '__main__':

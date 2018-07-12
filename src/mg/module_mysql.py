@@ -8,11 +8,12 @@ import server_return
 
 HOST = '127.0.0.1'
 USER = 'root'
-PASSWORD = 'uu@5!uacqr!qGZly'
+PASSWORD = 'woshinanren'
 PASSWORD_LOCAL = '123456'
 DATABASE = 'moviegetter'
 TABLE_USER = 'user'
 TABLE_USER_LOG = 'user_log'
+TABLE_USER_MOVIE = 'user_movie_log'
 
 ERROR_PERMISSION_DE = server_return.ERROR_PERMISSION_DE
 ERROR_PARAMS = server_return.ERROR_PARAMS
@@ -45,6 +46,7 @@ class MysqlClient(object):
             self.db = pymysql.connect(host=HOST, user=USER, password=PASSWORD_LOCAL, database=DATABASE,
                                       charset='utf8', port=3306)
         self.cursor = self.db.cursor()
+        self._create_table()
 
     def create_user(self, root_imei, imei, role, usable, name):
         """
@@ -115,7 +117,7 @@ class MysqlClient(object):
         self.cursor.execute(sql)
         user = self.cursor.fetchone()
         if user:
-            return server_return.server_success(user[INDEX_ROLE])
+            return server_return.server_success({'role': user[INDEX_ROLE]})
         else:
             insert_result = self._save_new_user(imei, None, None, None)
             if insert_result['code'] == 200:
@@ -154,8 +156,6 @@ class MysqlClient(object):
                 return server_return.server_success({'mark_id': lastrowid})
             except:
                 return server_return.server_error(server_return.ERROR_DB)
-
-
         else:
             return server_return.server_error(server_return.ERROR_DB, '用户不存在')
 
@@ -163,12 +163,33 @@ class MysqlClient(object):
         update_sql = 'update {table} set logout_time = \"{logout_time}\" where id=\"{id}\";' \
             .format(table=TABLE_USER_LOG, logout_time=logout_time, id=id)
         try:
-            print('mark_out:',update_sql)
+            print('mark_out:', update_sql)
             self.cursor.execute(update_sql)
             self.db.commit()
             return server_return.server_success('更新成功')
         except:
             return server_return.server_error(server_return.ERROR_DB)
+
+    def mark_movie(self, imei, movie_id, movie_name, downloaded_time, downloaded_timestamp):
+        select_url = "select * from {table} where imei = \"{imei}\";".format(table=TABLE_USER, imei=imei)
+        self.cursor.execute(select_url)
+        user = self.cursor.fetchone()
+        if user:
+            user_id = user[INDEX_ID]
+            user_name = user[INDEX_NAME]
+            sql = 'insert into {table}(userId,userName,movieId,movieName,downloaded_time,' \
+                  'downloaded_timestamp) values({userId},\"{userName}\",{movieId},\"{movieName}\",\"{downloaded_time}\",' \
+                  '{downloaded_timestamp});'.format(table=TABLE_USER_MOVIE, userId=user_id, userName=user_name,
+                                                    movieId=movie_id, movieName=movie_name,
+                                                    downloaded_time=downloaded_time,
+                                                    downloaded_timestamp=downloaded_timestamp)
+            try:
+                print('记录数据', sql)
+                self.cursor.execute(sql)
+                self.db.commit()
+                return server_return.server_success('记录成功')
+            except:
+                return server_return.server_error(server_return.ERROR_DB)
 
     def _to_user_log_bean(self, s: tuple):
         return {'id': s[0],
@@ -179,3 +200,40 @@ class MysqlClient(object):
                 'logout_time': s[5],
                 'local': s[6],
                 'ip': s[7]}
+
+    def _create_table(self):
+        create_1 = "CREATE TABLE IF NOT EXISTS `user`(\
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,\
+  `imei` varchar(50) DEFAULT NULL,\
+  `name` varchar(50) DEFAULT NULL,\
+  `role` varchar(20) DEFAULT NULL,\
+  `create_time` varchar(50) DEFAULT NULL,\
+  `usable` int(4) NOT NULL DEFAULT '1' COMMENT '是否可用',\
+  PRIMARY KEY (`id`)\
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;"
+        create_2 = "CREATE TABLE IF NOT EXISTS `user_log` (\
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,\
+  `user_id` int(11) DEFAULT NULL,\
+  `imei` varchar(50) DEFAULT NULL,\
+  `username` varchar(50) DEFAULT NULL,\
+  `login_time` varchar(50) DEFAULT NULL,\
+  `logout_time` varchar(50) DEFAULT NULL,\
+  `local` varchar(50) DEFAULT NULL,\
+  `ip` varchar(50) DEFAULT NULL,\
+  PRIMARY KEY (`id`)\
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;"
+        self.cursor.execute(create_1)
+        self.cursor.execute(create_2)
+        self.db.commit()
+
+        # self.cursor.execute("show tables like '{table}'".format(table=TABLE_USER))
+        # if self.cursor.fetchone() is None:
+        #     self.cursor.execute(create_1)
+        #     self.db.commit()
+        # self.cursor.execute("show tables like '{table}'".format(table=TABLE_USER_LOG))
+        # if self.cursor.fetchone() is None:
+        #     self.cursor.execute(create_2)
+        #     self.db.commit()
+
+    def __del__(self):
+        self.db.close()
