@@ -8,7 +8,7 @@ import server_return
 
 HOST = '127.0.0.1'
 USER = 'root'
-PASSWORD = 'woshinanren'
+PASSWORD = 'woshinanshen'
 PASSWORD_LOCAL = '123456'
 DATABASE = 'moviegetter'
 TABLE_USER = 'user'
