@@ -206,11 +206,12 @@ class MysqlClient(object):
         self.cursor.execute(select_sql)
         current_version = self.cursor.fetchone()
         if current_version:
-            db_version_code = current_version[1]
+            # print('===', current_version)
+            db_version_code = int(current_version[1])
             if db_version_code < version_code:
                 insert_sql = 'insert into versions(version_code,version_name,is_current,create_time) values({version_code},\"{version_name}\",1,curdate())'.format(
                     version_code=version_code, version_name=version_name)
-                update_sql = 'update versions set is_current = 0 where id = {id}'.format(id=db_version_code[0])
+                update_sql = 'update versions set is_current = 0 where id = {id}'.format(id=current_version[0])
                 self.cursor.execute(insert_sql)
                 self.cursor.execute(update_sql)
                 self.db.commit()
@@ -218,8 +219,8 @@ class MysqlClient(object):
                     {'version_code': version_code, 'version_name': version_name, 'is_current': 1})
             else:
                 return server_return.server_success(
-                    {'version_code': db_version_code[1], 'version_name': db_version_code[2],
-                     'is_current': db_version_code[3]})
+                    {'version_code': current_version[1], 'version_name': current_version[2],
+                     'is_current': current_version[3]})
 
         else:
             insert_sql = 'insert into versions(version_code,version_name,is_current,create_time) values({version_code},\"{version_name}\",1,curdate())'.format(

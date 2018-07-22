@@ -147,7 +147,7 @@ def check_version():
     version_code = request.form.get('version_code', None)
     version_name = request.form.get('version_name', None)
     if version_code and version_name:
-        return client().check_version(version_code, version_name)
+        return client().check_version(int(version_code), version_name)
     else:
         return server_return.server_error(server_return.ERROR_DB)
 
