@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # create by Aramis
-from flask import Flask, g, request
+import os
+
+from flask import Flask, g, request, send_from_directory, make_response
 
 import server_return
 from module_mysql import MysqlClient
@@ -119,6 +121,35 @@ def get_post_params(param_name: str):
         logout_time = request.form['logout_time']
     else:
         return server_return.server_error(server_return.ERROR_PARAMS)
+
+
+@app.route('/download/apk', methods=['GET'])
+def download_aps():
+    # directory = '../apks'
+    directory = os.getcwd()[0:-2] + 'apks'
+    print(directory)
+    # response=make_response(send_from_directory(directory,'test_file.txt',as_attachment=True))
+    # response.headers['']='attachment; filename={}'.format(file_name.encode())
+    # dirpath = os.path.join(app.root_path, 'apks')
+    # print(dirpath)
+    # return send_from_directory(directory, 'test_file.txt')
+
+    response = make_response(send_from_directory(directory, 'test_file.txt', as_attachment=True))
+    response.headers["Content-Disposition"] = "attachment; filename={}".format(
+        'test_file.txt'.encode().decode('latin-1'))
+
+    print(response)
+    return response
+
+
+@app.route('/check_version', methods=['POST'])
+def check_version():
+    version_code = request.form.get('version_code', None)
+    version_name = request.form.get('version_name', None)
+    if version_code and version_name:
+        return client().check_version(version_code, version_name)
+    else:
+        return server_return.server_error(server_return.ERROR_DB)
 
 
 if __name__ == '__main__':
