@@ -1,0 +1,113 @@
+<html>
+<head>
+    <title>IPv6地址查询工具</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <style>
+        body, input, select, td, textarea {
+            font-family: Tahoma, sans-serif;
+            font-size: 9pt;
+        }
+    </style>
+</head>
+<body>
+<center>
+    <div style="width:600px;text-align:left;">
+        <h1 align="center">IPv6地址查询工具</h1>
+        <h3 align="center">本页网址 <a href="//ip.zxinc.org/ipquery/">ip.zxinc.org/ipquery/</a><br>
+            <h3 align="center">注意：本工具不能查询域名。查询域名请使用DNS工具。</h3>
+            <br/>
+            <table width="100%" cellspacing="1" style="background-color:#ccc;">
+                <tr>
+                    <td colspan="3" style="text-align:center; background-color:#eee;height:20px;">你的IP鉴定<br/>
+                        <a href=".">IPv6数据库版本: ZX公网IPv6库 20180213版 (记录数: 80384)</a><br/>
+                        <a href="http://www.cz88.net/ip/">IPv4镜像数据库版本: 纯真网络 2018年2月10日IP数据 (记录数: 448424)</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align:center; width:18%;background-color:#eee;height:20px;">你的IP</td>
+                    <td style="text-align:center;background-color:#fff;width:30%;height:20px;">36.110.14.107</td>
+                    <td style="text-align:center;background-color:#fff;width:52%;height:20px;">北京市 电信</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center; width:18%;background-color:#eee;height:20px;">User-Agent</td>
+                    <td colspan="2" style="text-align:center;background-color:#fff;height:20px;">
+                        python-requests/2.18.4
+                    </td>
+                </tr>
+            </table>
+            <br/>
+
+            <form action="" method="get">
+                <table width="100%" cellspacing="1" style="background-color:#ccc" align="center">
+                    <tr>
+                        <td colspan="2" style="background-color:#eee;text-align:center;height:20px">IP地址查询</td>
+                    </tr>
+                    <tr>
+                        <td style="background-color:#eee;text-align:center;width:18%;height:20px">查询IP</td>
+                        <td style="text-align:center;background-color:#fff;height:20px">
+                            <input name="ip" type="text" style="width:300px;padding:2px;" value="136.110.14.107"/>
+                            <input type="submit" value="查 询"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background-color:#eee;text-align:center;width:18%;height:20px">IP范围</td>
+                        <td style="text-align:center;background-color:#fff;height:20px">136.64.0.0 - 136.140.255.255
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background-color:#eee;text-align:center;width:18%;height:20px">地理位置</td>
+                        <td style="text-align:center;background-color:#fff;height:20px">美国 密歇根州福特汽车公司</td>
+                    </tr>
+                </table>
+            </form>
+            <br/>
+
+            <form action="" method="post">
+                <input type="hidden" name="z" value="save"/>
+                <table width="100%" cellspacing="1" style="background-color:#ccc">
+                    <tr>
+                        <td colspan="2" style="background-color:#eee;text-align:center;">未知/错误IPv6地址提交</td>
+                    </tr>
+                    <tr>
+                        <td style="background-color:#eee;text-align:center;width:18%">IPv6地址</td>
+                        <td style="background-color:#fff;text-align:center;">
+                            <input name="pip" type="text" style="width:95%;padding:2px;"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background-color:#eee;text-align:center;width:18%">子网前缀(选填)</td>
+                        <td style="background-color:#fff;text-align:center;">
+                            <input name="pmask" type="text" style="width:95%;padding:2px;"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background-color:#eee;text-align:center;width:18%">地理位置</td>
+                        <td style="background-color:#fff;text-align:center;">
+                            <input name="paddr" type="text" style="width:95%;padding:2px;"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="background-color:#eee;text-align:center;">
+                            <input type="submit" value="提 交"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="background-color:#fff;text-align:center;">有大量的IPv6数据需要提交的,可直接找<b>ZX</b>(QQ:61857543),谢谢!<br>
+                            有大量的IPv4数据需要提交的,请找<b>金狐</b>(<a href="http://bbs.cz88.net/f26">论坛</a>),谢谢!
+                        </td>
+                    </tr>
+                </table>
+            </form>
+
+            <a href="../">返回首页</a><br/>
+            友情链接:<br/>
+            <a href="http://www.cz88.net/ip/" target="_blank">IPv4地址查询工具(纯真版)</a>
+
+            <hr>
+            <center>
+                版权所有 &copy; 2009-2015 ZX Inc.<br/>
+            </center>
+    </div>
+</center>
+</body>
+</html>

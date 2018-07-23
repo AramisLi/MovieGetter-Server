@@ -68,12 +68,27 @@ def mark_in():
         login_time = request.form['login_time']
     else:
         return server_return.server_error(server_return.ERROR_PARAMS, "login_time")
-    if 'local' in request.form:
-        local = request.form['local']
-    if 'ip' in request.form:
-        ip = request.form['ip']
+    # if 'local' in request.form:
+    # local = request.form['local']
+    # if 'ip' in request.form:
+    #     ip = request.form['ip']
+    local = request.form.get('local', None)
+    ip = request.form.get('ip', None)
+    version_code = request.form.get('version_code', None)
+    version_name = request.form.get('version_name', None)
 
-    return client().mark_in(imei, login_time, local, ip)
+    return client().mark_in(imei, login_time, local, ip, version_code, version_name)
+
+
+@app.route('/mark_in_ip', methods=['POST'])
+def mark_in_ip():
+    ip = request.form.get('ip', None)
+    mark_id = request.form.get('mark_id', None)
+    if not ip:
+        return server_return.server_error(server_return.ERROR_PARAMS, "ip")
+    if not mark_id:
+        return server_return.server_error(server_return.ERROR_PARAMS, "mark_id")
+    return client().mark_in_ip(ip, mark_id)
 
 
 @app.route('/mark_out', methods=['POST'])

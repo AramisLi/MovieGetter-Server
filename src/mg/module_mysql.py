@@ -3,6 +3,8 @@
 import time
 
 import pymysql
+import requests
+from scrapy.selector import Selector
 
 import server_return
 
@@ -125,7 +127,7 @@ class MysqlClient(object):
             else:
                 return insert_result
 
-    def mark_in(self, imei, login_time, local, ip):
+    def mark_in(self, imei, login_time, local, ip, version_code, version_name):
         select_sql = 'select * from {table} where imei = {imei}' \
             .format(table=TABLE_USER, imei=imei)
         self.cursor.execute(select_sql)
@@ -145,6 +147,12 @@ class MysqlClient(object):
             if ip:
                 insert_sql += ',ip'
                 values_str += ',\"{ip}\"'.format(ip=ip)
+            if version_code:
+                insert_sql += ',version_code'
+                values_str += ',{version_code}'.format(version_code=version_code)
+            if version_name:
+                insert_sql += ',version_name'
+                values_str += ',\"{version_name}\"'.format(version_name=version_name)
             f_insert_sql = insert_sql + ')' + values_str + ');'
 
             print('mark_in', f_insert_sql)
@@ -229,6 +237,27 @@ class MysqlClient(object):
             self.db.commit()
             return server_return.server_success(
                 {'version_code': version_code, 'version_name': version_name, 'is_current': 1})
+
+    def mark_in_ip(self, ip, mark_id):
+        local = None
+        try:
+            res = requests.get('http://ip.zxinc.org/ipquery/?ip={ip}'.format(ip=ip))
+            selector = Selector(text=res.text)
+            local = selector.xpath('//form[@method="get"]//tr[4]/td[2]/text()').extract_first()
+        except:
+            pass
+        sets = 'ip=\"{ip}\"'.format(ip=ip)
+        if local:
+            sets += ',local=\"{local}\"'.format(local=local)
+        update_sql = 'update {table} set {sets} where id = {mark_id}'.format(table=TABLE_USER_LOG, sets=sets,
+                                                                             mark_id=mark_id)
+        print('update_sql', update_sql)
+        try:
+            self.cursor.execute(update_sql)
+            self.db.commit()
+            return server_return.server_success('更新成功')
+        except:
+            return server_return.server_error(server_return.ERROR_DB, update_sql)
 
     def _create_table(self):
         create_1 = "CREATE TABLE IF NOT EXISTS `user`(\
