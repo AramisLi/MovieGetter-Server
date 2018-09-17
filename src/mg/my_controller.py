@@ -9,9 +9,14 @@ import requests
 from scrapy.selector import Selector
 from module_mysql import MysqlClient
 
-if os.getcwd()[0:-2] + 'utils' not in sys.path:
-    print(os.getcwd()[0:-2] + 'utils')
-    sys.path.append(os.getcwd()[0:-2] + 'utils')
+if 'mg' in os.getcwd():
+    if os.getcwd()[0:-2] + 'utils' not in sys.path:
+        print(os.getcwd()[0:-2] + 'utils')
+        sys.path.append(os.getcwd()[0:-2] + 'utils')
+else:
+    if os.getcwd() + '/src/utils' not in sys.path:
+        print('run---' + os.getcwd() + '/src/utils')
+        sys.path.append(os.getcwd() + '/src/utils')
 
 if 'woff2number' not in sys.modules:
     woff2number = __import__('woff2number')
