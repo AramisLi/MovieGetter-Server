@@ -155,7 +155,13 @@ class MyController:
         if res and res.status_code == 200:
             selector = Selector(text=res.text)
             _description = selector.xpath('//meta[@name="description"]/@content').extract_first()
-            movie['description'] = _description[_description.index(':') + 1:len(_description)]
+
+            def get_description(des: str):
+                if '\\\\\"' in des:
+                    des = des.replace('\\\\\"', '')
+                return des
+
+            movie['description'] = get_description(_description[_description.index(':') + 1:len(_description)])
             images = selector.xpath('//div[@class="module"]/div[@class="mod-content"]//img/@data-src').extract()
             _images = ''
             for i in images:
@@ -184,7 +190,11 @@ class MyController:
         sql = 'insert into maoyan_board({keys}) values ({valuess}) ON DUPLICATE KEY UPDATE {duplicate};'.format(
             keys=keys, valuess=values, duplicate=duplicate)
         # print(sql)
-        self.client.save(sql)
+        try:
+            self.client.save(sql)
+        except:
+            print('保存出错')
+            print(sql)
 
     def get_data(self, tag, page_num, page_size):
         print('tag', tag, 'page_num', page_num, 'page_size', page_size)
