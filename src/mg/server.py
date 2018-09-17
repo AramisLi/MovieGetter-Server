@@ -144,7 +144,7 @@ def get_post_params(param_name: str):
 @app.route('/download/apk', methods=['GET'])
 def download_apks():
     # directory = '../apks'
-    directory = os.getcwd()[0:-2] + 'apks'
+    directory = _get_directory()
     print(directory)
     # response=make_response(send_from_directory(directory,'test_file.txt',as_attachment=True))
     # response.headers['']='attachment; filename={}'.format(file_name.encode())
@@ -174,10 +174,8 @@ def download_file(filename):
     print(dict(request.args))
 
     if _check_sign(request.args):
-        print('go go go')
-        directory = os.path.abspath(os.path.join(os.getcwd(), '..')) + '/' + 'apks'
+        directory = _get_directory()
         b = os.path.isfile(directory + '/' + filename)
-        print(b)
         if b:
             response = make_response(send_from_directory(directory, filename, as_attachment=True))
             response.headers["Content-Disposition"] = "attachment; filename={}".format(
@@ -189,7 +187,7 @@ def download_file(filename):
 
 @app.route('/pic/<string:filename>', methods=['GET'])
 def show_pic(filename):
-    directory = os.path.abspath(os.path.join(os.getcwd(), '..')) + '/' + 'apks'
+    directory = _get_directory()
     f = directory + '/' + filename
     b = os.path.isfile(f)
     if b:
@@ -206,7 +204,7 @@ def show_pic(filename):
 def upload_file():
     if 'file' in request.files and 'sign' in request.form and 'time_stamp' in request.form:
         if request.form.get('sign', None) == _get_sign(request.form.get('time_stamp', None)):
-            directory = os.path.abspath(os.path.join(os.getcwd(), '..')) + '/' + 'apks'
+            directory = _get_directory()
             file = request.files['file']
             print(file, type(file))
             file.save(directory + '/' + _get_filename(file.filename, directory))
@@ -216,6 +214,14 @@ def upload_file():
             return server_return.server_error(server_return.ERROR_SIGN)
     else:
         return server_return.server_error(server_return.ERROR_PARAMS)
+
+
+def _get_directory(d='apks'):
+    if 'mg' in os.getcwd():
+        directory = os.path.abspath(os.path.join(os.getcwd(), '..')) + '/' + '{}'.format(d)
+    else:
+        directory = os.getcwd() + '/src/{}'.format(d)
+    return directory
 
 
 def _get_filename(origin: str, dirr):
