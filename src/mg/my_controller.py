@@ -10,13 +10,16 @@ from scrapy.selector import Selector
 from module_mysql import MysqlClient
 
 if os.getcwd()[0:-2] + 'utils' not in sys.path:
+    print(os.getcwd()[0:-2] + 'utils')
     sys.path.append(os.getcwd()[0:-2] + 'utils')
 
 if 'woff2number' not in sys.modules:
     woff2number = __import__('woff2number')
+    print('import')
 else:
     eval('import woff2number')
     woff2number = eval('reload(woff2number)')
+    print('eval')
 
 URL_TAG0 = 'http://maoyan.com/board/7'
 URL_TAG1 = 'http://maoyan.com/board/6'
