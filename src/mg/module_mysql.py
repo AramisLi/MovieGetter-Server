@@ -7,6 +7,7 @@ import requests
 from scrapy.selector import Selector
 
 import server_return
+import json
 
 HOST = '127.0.0.1'
 USER = 'root'
@@ -48,7 +49,7 @@ class MysqlClient(object):
             self.db = pymysql.connect(host=HOST, user=USER, password=PASSWORD_LOCAL, database=DATABASE,
                                       charset='utf8', port=3306)
         self.cursor = self.db.cursor()
-        self._create_table()
+        # self._create_table()
 
     def create_user(self, root_imei, imei, role, usable, name):
         """
@@ -293,5 +294,53 @@ class MysqlClient(object):
         #     self.cursor.execute(create_2)
         #     self.db.commit()
 
+    def save(self, sql: str):
+        # print(sql)
+        self.cursor.execute(sql)
+        self.db.commit()
+
+    def get_movie_board_data(self, tag, limit=10, offset=0):
+
+        hour = int(time.strftime('%H', time.localtime(time.time())))
+        date = time.strftime('%Y-%m-%d', time.localtime(time.time() - 24 * 3600 if hour < 10 else time.time()))
+        print(date)
+        sql = 'select * from maoyan_board where tag={tag} and update_time=\"{date}\" limit {limit} offset {offset}'.format(
+            tag=tag, limit=limit,
+            offset=offset, date=date)
+        self.cursor.execute(sql)
+        ts = self.cursor.fetchall()
+
+        def to_dict(t: tuple):
+            return {
+                'id': t[0],
+                'movie_name': t[1],
+                'movie_id': t[2],
+                'movie_year': t[3],
+                'actors': t[4],
+                'score': t[5],
+                'ranking': t[6],
+                'update_time': str(t[7]),
+                'sync_time': str(t[8]),
+                'description': t[9],
+                'wanna_watch': t[10],
+                'wanna_watch_all': t[11],
+                'boxoffice': t[12],
+                'boxoffice_all': t[13],
+                'boxoffice_lastweek': t[14],
+                'tag': t[15],
+                'tag_name': t[16],
+                'cover_image': t[17],
+                'images': t[18]
+            }
+
+        return [to_dict(i) for i in ts]
+
     def __del__(self):
         self.db.close()
+
+
+if __name__ == '__main__':
+    c = MysqlClient()
+
+    r = c.get_movie_board_data(0, 10)
+    print(r)
