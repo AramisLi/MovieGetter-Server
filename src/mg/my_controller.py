@@ -8,7 +8,7 @@ import requests
 from scrapy.selector import Selector
 from module_mysql import MysqlClient
 
-sys.path.append('..')
+sys.path.append('../')
 from utils import woff2number
 
 URL_TAG0 = 'http://maoyan.com/board/7'
