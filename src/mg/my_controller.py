@@ -3,13 +3,20 @@
 import re
 import time
 import sys
+import os
 
 import requests
 from scrapy.selector import Selector
 from module_mysql import MysqlClient
 
-sys.path.append('../')
-from utils import woff2number
+if os.getcwd()[0:-2] + 'utils' not in sys.path:
+    sys.path.append(os.getcwd()[0:-2] + 'utils')
+
+if 'woff2number' not in sys.modules:
+    woff2number = __import__('woff2number')
+else:
+    eval('import woff2number')
+    woff2number = eval('reload(woff2number)')
 
 URL_TAG0 = 'http://maoyan.com/board/7'
 URL_TAG1 = 'http://maoyan.com/board/6'
