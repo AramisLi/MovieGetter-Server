@@ -6,13 +6,10 @@ import sys
 
 import requests
 from scrapy.selector import Selector
-
-sys.path.append('..')
-import utils.woff2number as woff2number
-
 from module_mysql import MysqlClient
 
-
+sys.path.append('..')
+from utils import woff2number
 
 URL_TAG0 = 'http://maoyan.com/board/7'
 URL_TAG1 = 'http://maoyan.com/board/6'
