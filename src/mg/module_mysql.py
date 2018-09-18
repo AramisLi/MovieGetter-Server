@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # create by Aramis
 import time
-
+import datetime
 import pymysql
 import requests
 from scrapy.selector import Selector
@@ -210,34 +210,77 @@ class MysqlClient(object):
                 'local': s[6],
                 'ip': s[7]}
 
-    def check_version(self, version_code, version_name):
+    def check_version(self):
         select_sql = 'select * from versions where is_current = 1;'
         self.cursor.execute(select_sql)
-        current_version = self.cursor.fetchone()
-        if current_version:
-            # print('===', current_version)
-            db_version_code = int(current_version[1])
-            if db_version_code < version_code:
-                insert_sql = 'insert into versions(version_code,version_name,is_current,create_time) values({version_code},\"{version_name}\",1,curdate())'.format(
-                    version_code=version_code, version_name=version_name)
-                update_sql = 'update versions set is_current = 0 where id = {id}'.format(id=current_version[0])
-                self.cursor.execute(insert_sql)
-                self.cursor.execute(update_sql)
-                self.db.commit()
-                return server_return.server_success(
-                    {'version_code': version_code, 'version_name': version_name, 'is_current': 1})
-            else:
-                return server_return.server_success(
-                    {'version_code': current_version[1], 'version_name': current_version[2],
-                     'is_current': current_version[3]})
+        version = self.cursor.fetchone()
+        print(version)
+        # if current_version:
+        #     # print('===', current_version)
+        #     db_version_code = int(current_version[1])
+        #     if db_version_code < version_code:
+        #         insert_sql = 'insert into versions(version_code,version_name,is_current,create_time) values({version_code},\"{version_name}\",1,curdate())'.format(
+        #             version_code=version_code, version_name=version_name)
+        #         update_sql = 'update versions set is_current = 0 where id = {id}'.format(id=current_version[0])
+        #         self.cursor.execute(insert_sql)
+        #         self.cursor.execute(update_sql)
+        #         self.db.commit()
+        #         return server_return.server_success(
+        #             {'version_code': version_code, 'version_name': version_name, 'is_current': 1})
+        #     else:
+        #         return server_return.server_success(
+        #             {'version_code': current_version[1], 'version_name': current_version[2],
+        #              'is_current': current_version[3]})
+        #
+        # else:
+        #     insert_sql = 'insert into versions(version_code,version_name,is_current,create_time) values({version_code},\"{version_name}\",1,curdate())'.format(
+        #         version_code=version_code, version_name=version_name)
+        #     self.cursor.execute(insert_sql)
+        #     self.db.commit()
 
-        else:
-            insert_sql = 'insert into versions(version_code,version_name,is_current,create_time) values({version_code},\"{version_name}\",1,curdate())'.format(
-                version_code=version_code, version_name=version_name)
-            self.cursor.execute(insert_sql)
+        t=version[4]
+        t2=t.strftime('%Y-%m-%d %H:%M:%S')
+        print(type(t),t)
+        print("t2",t2)
+        r = {
+            'version_code': version[1],
+            'version_name': version[2],
+            'is_current': version[3],
+            'create_time': version[4].strftime('%Y-%m-%d %H:%M:%S'),
+            'message': version[5],
+            'url': version[6],
+            'is_force': version[7],
+        }
+        return server_return.server_success(r)
+
+    def save_version(self, file_name: str, version_code: int, version_name: str, is_current: int, message: str,
+                     is_force: int):
+        select_sql = 'select id,version_code from versions;'
+        self.cursor.execute(select_sql)
+        codes = self.cursor.fetchall()
+        print(codes, codes)
+        is_update = False
+        for i in codes:
+            if version_code == int(i[1]):
+                is_update = True
+                break
+
+        file_url = '/download/apk/{file_name}'.format(file_name=file_name)
+        if is_update:
+            update_code_sql = 'update versions set version_name=\"{version_name}\",is_current={is_current},message=\"{message}\",is_force={is_force},url=\"{url}\" where version_code={version_code};'.format(
+                version_name=version_name, is_current=is_current, message=message, is_force=is_force, url=file_url,version_code=version_code)
+            print('更新同version_code',update_code_sql)
+            self.cursor.execute(update_code_sql)
             self.db.commit()
-            return server_return.server_success(
-                {'version_code': version_code, 'version_name': version_name, 'is_current': 1})
+        else:
+            if is_current > 0:
+                update_sql = 'update versions set is_current=0 where is_current>0;'
+                self.cursor.execute(update_sql)
+            sql = 'insert into versions(version_code,version_name,is_current,message,is_force,url,create_time) values({version_code},\"{version_name}\",{is_current},\"{message}\",{is_force},\"{url}\",CURRENT_TIME )'.format(
+                version_code=version_code, version_name=version_name, is_current=is_current, message=message,
+                is_force=is_force, url=file_url)
+            self.cursor.execute(sql)
+            self.db.commit()
 
     def mark_in_ip(self, ip, mark_id):
         local = None

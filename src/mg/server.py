@@ -141,29 +141,49 @@ def get_post_params(param_name: str):
         return server_return.server_error(server_return.ERROR_PARAMS)
 
 
-@app.route('/download/apk', methods=['GET'])
-def download_apks():
-    # directory = '../apks'
-    directory = _get_directory()
-    print(directory)
-    # response=make_response(send_from_directory(directory,'test_file.txt',as_attachment=True))
-    # response.headers['']='attachment; filename={}'.format(file_name.encode())
-    # dirpath = os.path.join(app.root_path, 'apks')
-    # print(dirpath)
-    # return send_from_directory(directory, 'test_file.txt')
+@app.route('/download/apk/<string:filename>', methods=['GET'])
+def download_apks(filename):
+    if _check_sign(request.args, '我怎么这么好看'):
+        directory = _get_directory()
+        b = os.path.isfile(directory + '/' + filename)
+        if b:
+            response = make_response(send_from_directory(directory, filename, as_attachment=True))
+            response.headers["Content-Disposition"] = "attachment; filename={}".format(
+                filename.encode().decode('latin-1'))
+            return response
 
-    response = make_response(send_from_directory(directory, 'test_file.txt', as_attachment=True))
-    response.headers["Content-Disposition"] = "attachment; filename={}".format(
-        'test_file.txt'.encode().decode('latin-1'))
-
-    print(response)
-    return response
+    return server_return.server_error(server_return.ERROR_PARAMS)
 
 
-def _check_sign(params):
+@app.route('/upload/apk', methods=['POST'])
+def upload_apk():
+    if 'version_code' in request.form and 'version_name' in request.form and 'file' in request.files and _check_sign(
+            request.form):
+        form = request.form
+        is_current = form.get('is_current', 0)
+        is_force = form.get('is_force', 0)
+        message = form.get('message', None)
+        directory = _get_directory()
+        file = request.files['file']
+        if 'apk' in file.filename:
+            print(file, type(file))
+            fn = _get_filename(file.filename, directory)
+            file.save(directory + '/' + fn)
+
+            client().save_version(file_name=fn, version_code=int(form.get('version_code')),
+                                  version_name=form.get('version_name'), is_current=int(is_current),
+                                  message=message, is_force=is_force)
+            return server_return.server_success({'m': '上传成功'})
+        else:
+            return server_return.server_error(server_return.ERROR_SIGN, '文件格式有误')
+    else:
+        return server_return.server_error(server_return.ERROR_SIGN)
+
+
+def _check_sign(params, key=None):
     b = False
     if 'sign' in params and 'time_stamp' in params and params.get('sign', None) == _get_sign(
-            params.get('time_stamp', None)):
+            params.get('time_stamp', None), key):
         b = True
     return b
 
@@ -238,14 +258,14 @@ def _get_filename(origin: str, dirr):
 
 
 # 检查MG版本
-@app.route('/check_version', methods=['POST'])
+@app.route('/check_version', methods=['GET'])
 def check_version():
-    version_code = request.form.get('version_code', None)
-    version_name = request.form.get('version_name', None)
-    if version_code and version_name:
-        return client().check_version(int(version_code), version_name)
-    else:
-        return server_return.server_error(server_return.ERROR_DB)
+    # version_code = request.form.get('version_code', None)
+    # version_name = request.form.get('version_name', None)
+    # if version_code and version_name:
+    return client().check_version()
+    # else:
+    #     return server_return.server_error(server_return.ERROR_DB)
 
 
 # 爬取猫眼电影排行榜
@@ -272,9 +292,10 @@ def maoyan_board():
         return server_return.server_error(server_return.ERROR_PARAMS)
 
 
-def _get_sign(time_stamp):
+def _get_sign(time_stamp, key):
+    key = key if key else '我是大帅哥'
     hl = md5()
-    hl.update(('我是大帅哥' + time_stamp).encode(encoding='utf-8'))
+    hl.update((key + time_stamp).encode(encoding='utf-8'))
     mm = hl.hexdigest()
     return mm
 
